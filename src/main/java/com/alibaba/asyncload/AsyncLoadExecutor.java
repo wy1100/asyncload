@@ -74,25 +74,6 @@ public class AsyncLoadExecutor {
         return pool.submit(task);
     }
 
-    /**
-     * 判断线程池是否允许添加更多的任务，超过限制的，有可能会被拒绝
-     *
-     * @return
-     */
-    public boolean canAddMoreTask() {
-        boolean flag = pool.getActiveCount() < pool.getCorePoolSize();
-        if (!flag) {
-            if (pool.getQueue().size() < acceptCount) {
-                flag = true;
-            }
-        }
-        if (!flag) {
-            //TODO log
-            //System.out.println("activeCount: " + pool.getActiveCount() + " corePoolSize: " + pool.getPoolSize() + " queue size: " + pool.getQueue().size() + " acceptCount: " + acceptCount);
-        }
-        return flag;
-    }
-
     // ==================== help method ===========================
 
     private BlockingQueue<?> getBlockingQueue(int acceptCount, HandleMode mode) {

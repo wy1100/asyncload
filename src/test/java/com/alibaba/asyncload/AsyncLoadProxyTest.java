@@ -26,7 +26,7 @@ public class AsyncLoadProxyTest extends BaseAsyncLoadNoRunTest {
         // 初始化config
         AsyncLoadConfig config = new AsyncLoadConfig(3 * 1000l);
         // 初始化executor
-        AsyncLoadExecutor executor = new AsyncLoadExecutor(10, 9);
+        AsyncLoadExecutor executor = new AsyncLoadExecutor(10, 9, AsyncLoadExecutor.HandleMode.CALLERRUN);
         executor.initital();
         // 初始化proxy
         AsyncLoadEnhanceProxy<AsyncLoadTestService> proxy = new AsyncLoadEnhanceProxy<AsyncLoadTestService>();
@@ -45,6 +45,8 @@ public class AsyncLoadProxyTest extends BaseAsyncLoadNoRunTest {
         end = System.currentTimeMillis();
         System.out.println((end - start));
         Assert.assertTrue((end - start) > 500l); // 第一次会阻塞, 响应时间会在1000ms左右
+
+
 
         start = System.currentTimeMillis();
         System.out.println(model2.getDetail());
