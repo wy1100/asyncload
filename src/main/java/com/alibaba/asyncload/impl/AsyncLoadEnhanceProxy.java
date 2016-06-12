@@ -148,6 +148,11 @@ public class AsyncLoadEnhanceProxy<T> implements AsyncLoadProxy<T> {
                 // 针对返回对象是Object类型，不做代理。没有具体的method，代理没任何意义
                 return finMethod.invoke(finObj, finArgs);
             } else {
+                // 如果当前线程池不能支持更多负荷了，不做代理，直接变为串行执行
+                if(!executor.canAddMoreTask()) {
+                    return finMethod.invoke(finObj, finArgs);
+                }
+
                 Future future = executor.submit(new AsyncLoadCallable() {
 
                     public Object call() throws Exception {

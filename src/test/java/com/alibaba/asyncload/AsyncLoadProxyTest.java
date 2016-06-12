@@ -1,5 +1,7 @@
 package com.alibaba.asyncload;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -24,7 +26,7 @@ public class AsyncLoadProxyTest extends BaseAsyncLoadNoRunTest {
         // 初始化config
         AsyncLoadConfig config = new AsyncLoadConfig(3 * 1000l);
         // 初始化executor
-        AsyncLoadExecutor executor = new AsyncLoadExecutor(10, 100);
+        AsyncLoadExecutor executor = new AsyncLoadExecutor(10, 9);
         executor.initital();
         // 初始化proxy
         AsyncLoadEnhanceProxy<AsyncLoadTestService> proxy = new AsyncLoadEnhanceProxy<AsyncLoadTestService>();
@@ -41,17 +43,36 @@ public class AsyncLoadProxyTest extends BaseAsyncLoadNoRunTest {
         start = System.currentTimeMillis();
         System.out.println(model1.getDetail());
         end = System.currentTimeMillis();
+        System.out.println((end - start));
         Assert.assertTrue((end - start) > 500l); // 第一次会阻塞, 响应时间会在1000ms左右
 
         start = System.currentTimeMillis();
         System.out.println(model2.getDetail());
         end = System.currentTimeMillis();
+        System.out.println((end - start));
         Assert.assertTrue((end - start) < 500l); // 第二次不会阻塞，因为第一个已经阻塞了1000ms
 
         start = System.currentTimeMillis();
         System.out.println(model3.getDetail());
         end = System.currentTimeMillis();
+        System.out.println((end - start));
         Assert.assertTrue((end - start) < 500l); // 第三次不会阻塞，因为第一个已经阻塞了1000ms
+
+        Map<String, AsyncLoadTestModel> modelMap = new HashMap<String, AsyncLoadTestModel>();
+        for (int i = 0; i < 30; i++) {
+            System.out.println("ready i:" + i);
+            AsyncLoadTestModel iModel = service.getRemoteModel("i+" + i, 1000); // 每个请求sleep 1000ms
+            modelMap.put("i+" + i, iModel);
+//            //Assert.assertTrue((end - start) < 500l); // 第三次不会阻塞，因为第一个已经阻塞了1000ms
+        }
+
+        for (int i = 0; i < 30; i++) {
+            AsyncLoadTestModel iModel = modelMap.get("i+" + i);
+            start = System.currentTimeMillis();
+            System.out.println(iModel.getDetail());
+            end = System.currentTimeMillis();
+            System.out.println((end - start));
+        }
 
         // 销毁executor
         executor.destory();

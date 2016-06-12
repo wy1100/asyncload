@@ -28,11 +28,13 @@ public class AsyncLoadSpringInteceptorTest extends BaseAsyncLoadNoRunTest {
         start = System.currentTimeMillis();
         System.out.println(model1.getDetail());
         end = System.currentTimeMillis();
+        System.out.println((end - start));
         Assert.assertTrue((end - start) > 500l); // 第一次会阻塞, 响应时间会在1000ms左右
 
         start = System.currentTimeMillis();
         System.out.println(model2.getDetail());
         end = System.currentTimeMillis();
+        System.out.println((end - start));
         Assert.assertTrue((end - start) < 500l); // 第二次不会阻塞，第一个已经阻塞了1000ms
     }
 }

@@ -13,37 +13,37 @@ import com.alibaba.asyncload.impl.pool.NamedThreadFactory;
 
 /**
  * 异步加载的具体执行任务者, 支持Runable和Callable两种
- * 
+ *
  * @author jianghang 2011-1-21 下午11:32:31
  */
 public class AsyncLoadExecutor {
 
-    public static final int        DEFAULT_POOL_SIZE    = 20;
-    public static final int        DEFAULT_ACCEPT_COUNT = 100;
-    public static final HandleMode DEFAULT_MODE         = HandleMode.REJECT;
-    private int                    poolSize;
-    private int                    acceptCount;                             // 等待队列长度，避免无限制提交请求
-    private HandleMode             mode;                                    // 默认为拒绝服务，用于控制accept队列满了以后的处理方式
-    private AsyncLoadThreadPool    pool;
-    private volatile boolean       isInit               = false;
+    public static final int DEFAULT_POOL_SIZE = 20;
+    public static final int DEFAULT_ACCEPT_COUNT = 100;
+    public static final HandleMode DEFAULT_MODE = HandleMode.REJECT;
+    private int poolSize;
+    private int acceptCount;                             // 等待队列长度，避免无限制提交请求
+    private HandleMode mode;                                    // 默认为拒绝服务，用于控制accept队列满了以后的处理方式
+    private AsyncLoadThreadPool pool;
+    private volatile boolean isInit = false;
 
     enum HandleMode {
         REJECT, CALLERRUN;
     }
 
-    public AsyncLoadExecutor(){
+    public AsyncLoadExecutor() {
         this(DEFAULT_POOL_SIZE, DEFAULT_ACCEPT_COUNT, DEFAULT_MODE);
     }
 
-    public AsyncLoadExecutor(int poolSize){
+    public AsyncLoadExecutor(int poolSize) {
         this(poolSize, DEFAULT_ACCEPT_COUNT, DEFAULT_MODE);
     }
 
-    public AsyncLoadExecutor(int poolSize, int acceptCount){
+    public AsyncLoadExecutor(int poolSize, int acceptCount) {
         this(poolSize, acceptCount, DEFAULT_MODE);
     }
 
-    public AsyncLoadExecutor(int poolSize, int acceptCount, HandleMode mode){
+    public AsyncLoadExecutor(int poolSize, int acceptCount, HandleMode mode) {
         this.poolSize = poolSize;
         this.acceptCount = acceptCount;
         this.mode = mode;
@@ -55,7 +55,7 @@ public class AsyncLoadExecutor {
             BlockingQueue queue = getBlockingQueue(acceptCount, mode);
             // 构造pool池
             this.pool = new AsyncLoadThreadPool(poolSize, poolSize, 0L, TimeUnit.MILLISECONDS, queue,
-                                                new NamedThreadFactory(), handler);
+                    new NamedThreadFactory(), handler);
 
             isInit = true;
         }
@@ -72,6 +72,25 @@ public class AsyncLoadExecutor {
 
     public <T> AsyncLoadFuture<T> submit(AsyncLoadCallable<T> task) {
         return pool.submit(task);
+    }
+
+    /**
+     * 判断线程池是否允许添加更多的任务，超过限制的，有可能会被拒绝
+     *
+     * @return
+     */
+    public boolean canAddMoreTask() {
+        boolean flag = pool.getActiveCount() < pool.getCorePoolSize();
+        if (!flag) {
+            if (pool.getQueue().size() < acceptCount) {
+                flag = true;
+            }
+        }
+        if (!flag) {
+            //TODO log
+            //System.out.println("activeCount: " + pool.getActiveCount() + " corePoolSize: " + pool.getPoolSize() + " queue size: " + pool.getQueue().size() + " acceptCount: " + acceptCount);
+        }
+        return flag;
     }
 
     // ==================== help method ===========================

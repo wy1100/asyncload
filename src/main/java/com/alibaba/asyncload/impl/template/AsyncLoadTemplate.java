@@ -56,7 +56,7 @@ public class AsyncLoadTemplate {
 
         AsyncLoadConfig copy = config.cloneConfig();
         copy.setDefaultTimeout(timeout);
-        return execute(callback, returnClass, copy);
+        return (R) execute(callback, returnClass, copy);
     }
 
     /**
@@ -103,7 +103,7 @@ public class AsyncLoadTemplate {
             throw new AsyncLoadException("you should specify AsyncLoadCallBack<R> for R type, ie: AsyncLoadCallBack<OfferModel>");
         }
         Class returnClass = (Class) getGenericClass((ParameterizedType) type, 0);
-        return execute(callback, returnClass, config);
+        return (R) execute(callback, returnClass, config);
     }
 
     /**
